@@ -7,8 +7,84 @@ generator db {
     provider = "go run github.com/steebchen/prisma-client-go"
 }
 
+enum Role {
+    STUDENT
+    TEACHER
+}
+
 model User {
-    id    String  @id @default(cuid())
-    email String  @unique
-    name  String?
+    id        String   @id @default(cuid())
+    name      String
+    email     String   @unique
+    password  String
+    username  String   @unique // use the first part of the email as username
+    role      Role
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    coursesEnrolled Course[]     @relation("CoursesEnrolled")
+    coursesTeaching Course[]     @relation("CoursesTeaching")
+    submissions     Submission[]
+}
+
+model Course {
+    id          String   @id @default(cuid())
+    code        String   @unique // course code like CSE3-CC-JS-24 (Section-Course-Teacher-Year) or anything unique
+    name        String
+    description String
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    teacher     User         @relation("CoursesTeaching", fields: [teacherId], references: [id])
+    teacherId   String
+    students    User[]       @relation("CoursesEnrolled")
+    assignments Assignment[]
+}
+
+model Assignment {
+    id       String    @id @default(cuid())
+    title    String
+    courseId String
+    dueDate  DateTime?
+
+    course    Course     @relation(fields: [courseId], references: [id])
+    createdAt DateTime   @default(now())
+    Question  Question[]
+}
+
+enum LANGUAGE {
+    C
+    CPP
+    JAVA
+    PYTHON
+}
+
+// Need to think about it.
+model Question {
+    id               String     @id @default(cuid())
+    que              String
+    total_marks      Int
+    allowed_language LANGUAGE[]
+
+    inputCases     String[]
+    expectedOutput String
+
+    createdAt DateTime @default(now())
+
+    assignment   Assignment   @relation(fields: [assignmentId], references: [id])
+    assignmentId String
+    Submission   Submission[]
+}
+
+model Submission {
+    id            String   @id @default(cuid())
+    code          String
+    language      LANGUAGE
+    marks_awarded Int
+    createdAt     DateTime @default(now())
+
+    user       User     @relation(fields: [userId], references: [id])
+    userId     String
+    question   Question @relation(fields: [questionId], references: [id])
+    questionId String
 }
