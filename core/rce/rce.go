@@ -124,7 +124,6 @@ func createContainer(ctx context.Context, apiClient *client.Client, containerIma
 			ReadonlyRootfs: true,   // Make filesystem read-only
 			SecurityOpt: []string{
 				"no-new-privileges",  // Prevent escalation of privileges
-				"seccomp=unconfined", // Apply a seccomp profile
 			},
 		},
 		nil,
