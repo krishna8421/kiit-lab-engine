@@ -1,5 +1,7 @@
 package main
 
+// import "kiit-lab-engine/core/rce"
+
 import (
 	"fmt"
 	"kiit-lab-engine/routes"
@@ -35,4 +37,13 @@ func main() {
 		return
 	}
 
+	// pythonCode := `print("Krishna")`
+
+	// stdout, stderr, err := rce.RunProgram(pythonCode, rce.PYTHON)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// println(stdout)
+	// println(stderr)
 }

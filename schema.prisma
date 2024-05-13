@@ -32,6 +32,7 @@ model Course {
     code        String   @unique // course code like CSE3-CC-JS-24 (Section-Course-Teacher-Year) or anything unique
     name        String
     description String
+    isArchived  Boolean  @default(false)
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
 
@@ -59,14 +60,23 @@ enum LANGUAGE {
     PYTHON
 }
 
+model TestCase {
+    id     String @id @default(cuid())
+    input  String
+    output String
+}
+
 // Need to think about it.
 model Question {
     id               String     @id @default(cuid())
-    que              String
     total_marks      Int
     allowed_language LANGUAGE[]
 
-    inputCases     String[]
+    que            String
+    functionName   String // submission should have a function with this name
+    inputVariables String[]
+
+    testCases      String[]
     expectedOutput String
 
     createdAt DateTime @default(now())
