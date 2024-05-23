@@ -6,7 +6,10 @@ require (
 	github.com/docker/docker v26.1.2+incompatible
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/joho/godotenv v1.5.1
+	github.com/shopspring/decimal v1.4.0
 	github.com/spf13/viper v1.18.2
+	github.com/steebchen/prisma-client-go v0.37.0
 )
 
 require (

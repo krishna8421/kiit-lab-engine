@@ -1,22 +1,32 @@
 package service
 
+import (
+	"kiit-lab-engine/core/db"
+)
+
 type AuthService interface {
-	Register()
-	Login()
+	Register() error
+	Login() error
 }
 
-// implement the AuthService interface
 type authService struct {
+	db *db.DBClient
 }
 
-func NewAuthService() AuthService {
-	return &authService{}
+func NewAuthService(db *db.DBClient) AuthService {
+	return &authService{
+		db: db,
+	}
 }
 
-func (a *authService) Register() {
-	// implement the register logic
+func (a *authService) Register() error {
+	// Use a.db to interact with the database...
+	// Implement the register logic
+	return nil
 }
 
-func (a *authService) Login() {
-	// implement the login logic
+func (a *authService) Login() error {
+	// Use a.db to interact with the database...
+	// Implement the login logic
+	return nil
 }

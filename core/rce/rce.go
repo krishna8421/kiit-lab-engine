@@ -123,7 +123,7 @@ func createContainer(ctx context.Context, apiClient *client.Client, containerIma
 			NetworkMode:    "none", // Disable networking
 			ReadonlyRootfs: true,   // Make filesystem read-only
 			SecurityOpt: []string{
-				"no-new-privileges",  // Prevent escalation of privileges
+				"no-new-privileges", // Prevent escalation of privileges
 			},
 		},
 		nil,

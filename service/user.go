@@ -1,17 +1,29 @@
 package service
 
+import (
+	"kiit-lab-engine/core/db"
+)
+
 type UserService interface {
-	GetUser()
+	GetUser(id string) (interface{}, error)
+	// CreateNewUser() error
 }
 
-// implement the UserService interface
 type userService struct {
+	db *db.DBClient
 }
 
-func NewUserService() UserService {
-	return &userService{}
+func NewUserService(db *db.DBClient) UserService {
+	return &userService{
+		db: db,
+	}
 }
 
-func (u *userService) GetUser() {
-	// implement the get user logic
+func (u *userService) GetUser(id string) (interface{}, error) {
+	// Use u.db to interact with the database...
+	// This is just an example. Replace with actual user retrieval logic.
+	return map[string]interface{}{
+		"id":   id,
+		"name": "John Doe",
+	}, nil
 }

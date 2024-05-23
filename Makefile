@@ -5,6 +5,9 @@ db-push:
 	go run github.com/steebchen/prisma-client-go db push
 
 start:
-	air
+	go run main.go
 
-.PHONY: generate db-push start
+clean:
+	rm -rf db
+
+.PHONY: generate db-push start clean

@@ -1,49 +1,21 @@
 package main
 
-// import "kiit-lab-engine/core/rce"
-
 import (
-	"fmt"
-	"kiit-lab-engine/routes"
+	"kiit-lab-engine/core/server"
 	"log"
 
-	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
 
-func main() {
+func init() {
 	viper.SetConfigFile(".env")
-	viper.ReadInConfig()
-
-	ginMode := viper.GetString("GIN_MODE")
-	if ginMode == "release" {
-		gin.SetMode(gin.ReleaseMode)
-	} else {
-		gin.SetMode(gin.DebugMode)
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatalf("Error reading config file: %v", err)
 	}
+}
 
-	r := gin.Default()
-
-	r.SetTrustedProxies(nil)
-	routes.InitRoutes(r)
-
-	port := viper.GetString("PORT")
-	if port == "" {
-		port = "8421"
+func main() {
+	if err := server.StartServer(); err != nil {
+		panic(err)
 	}
-
-	if err := r.Run(fmt.Sprintf(":%s", port)); err != nil {
-		log.Println(err.Error())
-		return
-	}
-
-	// pythonCode := `print("Krishna")`
-
-	// stdout, stderr, err := rce.RunProgram(pythonCode, rce.PYTHON)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// println(stdout)
-	// println(stderr)
 }
