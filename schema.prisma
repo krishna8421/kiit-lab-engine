@@ -66,6 +66,15 @@ model TestCase {
     output String
 }
 
+model InputVariable {
+    id         String    @id @default(cuid())
+    name       String
+    type       String?
+    
+    Question   Question? @relation(fields: [questionId], references: [id])
+    questionId String?
+}
+
 // Need to think about it.
 model Question {
     id               String     @id @default(cuid())
@@ -74,7 +83,7 @@ model Question {
 
     que            String
     functionName   String // submission should have a function with this name
-    inputVariables String[]
+    inputVariables InputVariable[]
 
     testCases      String[]
     expectedOutput String
