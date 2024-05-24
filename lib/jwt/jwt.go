@@ -2,35 +2,42 @@ package jwt
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
 // JWTManager is a manager to handle JWT token
 type JWTManager struct {
-	secretKey     string
-	tokenDuration int64
+	SecretKey            string
+	AccessTokenDuration  int64
+	RefreshTokenDuration int64
 }
 
 // NewJWTManager creates a new JWTManager
-func NewJWTManager(secretKey string, tokenDuration int64) *JWTManager {
-	return &JWTManager{secretKey, tokenDuration}
+func NewJWTManager(secretKey string, accessTokenDuration, refreshTokenDuration int64) *JWTManager {
+	return &JWTManager{secretKey, accessTokenDuration, refreshTokenDuration}
 }
 
 // Generate generates a new JWT token
-func (manager *JWTManager) Generate(payload map[string]interface{}) (string, error) {
+func (manager *JWTManager) Generate(payload map[string]interface{}, isRefreshToken bool) (string, error) {
 	claims := jwt.MapClaims{}
 	for key, value := range payload {
 		claims[key] = value
 	}
+	if isRefreshToken {
+		claims["exp"] = time.Now().Add(time.Duration(manager.RefreshTokenDuration) * time.Second).Unix()
+	} else {
+		claims["exp"] = time.Now().Add(time.Duration(manager.AccessTokenDuration) * time.Second).Unix()
+	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(manager.secretKey))
+	return token.SignedString([]byte(manager.SecretKey))
 }
 
 // Verify verifies the JWT token
-func (manager *JWTManager) Verify(accessToken string) (map[string]interface{}, error) {
-	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
-		return []byte(manager.secretKey), nil
+func (manager *JWTManager) Verify(tokenString string) (map[string]interface{}, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(manager.SecretKey), nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("invalid token: %w", err)
@@ -43,26 +50,17 @@ func (manager *JWTManager) Verify(accessToken string) (map[string]interface{}, e
 }
 
 // Refresh refreshes the JWT token
-func (manager *JWTManager) Refresh(accessToken string) (string, error) {
-	claims, err := manager.Verify(accessToken)
+func (manager *JWTManager) Refresh(refreshToken string) (string, error) {
+	claims, err := manager.Verify(refreshToken)
 	if err != nil {
 		return "", err
 	}
-	return manager.Generate(claims)
+	return manager.Generate(claims, false)
 }
 
 // ExtractClaims extracts the claims from JWT token
-func (manager *JWTManager) ExtractClaims(accessToken string) (map[string]interface{}, error) {
-	claims, err := manager.Verify(accessToken)
-	if err != nil {
-		return nil, err
-	}
-	return claims, nil
-}
-
-// ExtractClaimsFromRefreshToken extracts the claims from refresh token
-func (manager *JWTManager) ExtractClaimsFromRefreshToken(refreshToken string) (map[string]interface{}, error) {
-	claims, err := manager.Verify(refreshToken)
+func (manager *JWTManager) ExtractClaims(tokenString string) (map[string]interface{}, error) {
+	claims, err := manager.Verify(tokenString)
 	if err != nil {
 		return nil, err
 	}
@@ -70,21 +68,8 @@ func (manager *JWTManager) ExtractClaimsFromRefreshToken(refreshToken string) (m
 }
 
 // ExtractUserID extracts the user ID from JWT token
-func (manager *JWTManager) ExtractUserID(accessToken string) (string, error) {
-	claims, err := manager.ExtractClaims(accessToken)
-	if err != nil {
-		return "", err
-	}
-	userID, ok := claims["user_id"].(string)
-	if !ok {
-		return "", fmt.Errorf("user_id not found")
-	}
-	return userID, nil
-}
-
-// ExtractUserIDFromRefreshToken extracts the user ID from refresh token
-func (manager *JWTManager) ExtractUserIDFromRefreshToken(refreshToken string) (string, error) {
-	claims, err := manager.ExtractClaimsFromRefreshToken(refreshToken)
+func (manager *JWTManager) ExtractUserID(tokenString string) (string, error) {
+	claims, err := manager.ExtractClaims(tokenString)
 	if err != nil {
 		return "", err
 	}
@@ -96,21 +81,8 @@ func (manager *JWTManager) ExtractUserIDFromRefreshToken(refreshToken string) (s
 }
 
 // ExtractRole extracts the role from JWT token
-func (manager *JWTManager) ExtractRole(accessToken string) (string, error) {
-	claims, err := manager.ExtractClaims(accessToken)
-	if err != nil {
-		return "", err
-	}
-	role, ok := claims["role"].(string)
-	if !ok {
-		return "", fmt.Errorf("role not found")
-	}
-	return role, nil
-}
-
-// ExtractRoleFromRefreshToken extracts the role from refresh token
-func (manager *JWTManager) ExtractRoleFromRefreshToken(refreshToken string) (string, error) {
-	claims, err := manager.ExtractClaimsFromRefreshToken(refreshToken)
+func (manager *JWTManager) ExtractRole(tokenString string) (string, error) {
+	claims, err := manager.ExtractClaims(tokenString)
 	if err != nil {
 		return "", err
 	}

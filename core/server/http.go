@@ -12,14 +12,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 
-	"kiit-lab-engine/core/db"
+	"kiit-lab-engine/db"
+	"kiit-lab-engine/lib/jwt"
 	"kiit-lab-engine/routes"
 )
 
+// StartServer initializes and starts the server
 func StartServer() error {
 	// Load configuration from .env file
 	viper.SetConfigFile(".env")
-	viper.ReadInConfig()
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatalf("failed to read config file: %v", err)
+	}
 
 	// Set Gin mode based on configuration
 	ginMode := viper.GetString("GIN_MODE")
@@ -29,8 +33,28 @@ func StartServer() error {
 		gin.SetMode(gin.DebugMode)
 	}
 
+	// Initialize JWT manager
+	jwtSecretKey := viper.GetString("JWT_SECRET_KEY")
+	if jwtSecretKey == "" {
+		log.Fatal("JWT_SECRET_KEY is not set in the configuration")
+	}
+	jwtAccessTokenDuration := viper.GetInt64("JWT_ACCESS_TOKEN_DURATION")
+	if jwtAccessTokenDuration == 0 {
+		jwtAccessTokenDuration = 3600 // default to 1 hour
+	}
+	jwtRefreshTokenDuration := viper.GetInt64("JWT_REFRESH_TOKEN_DURATION")
+	if jwtRefreshTokenDuration == 0 {
+		jwtRefreshTokenDuration = 1209600 // default to 14 days
+	}
+	jwtManager := jwt.NewJWTManager(jwtSecretKey, jwtAccessTokenDuration, jwtRefreshTokenDuration)
+
+	// Check for the presence of a DATABASE_URL environment variable
+	if viper.GetString("DATABASE_URL") == "" {
+		log.Fatal("DATABASE_URL is not set in the configuration")
+	}
+
 	// Initialize DB client
-	dbClient := db.NewClient()
+	dbClient := db.NewPrismaClient()
 	if err := dbClient.Connect(); err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
@@ -39,9 +63,9 @@ func StartServer() error {
 	// Initialize Gin router
 	r := gin.Default()
 	r.SetTrustedProxies(nil)
-	routes.InitRoutes(r, dbClient)
+	routes.InitRoutes(r, dbClient, jwtManager)
 
-	// x default
+	// Get port from configuration or default to 8421
 	port := viper.GetString("PORT")
 	if port == "" {
 		port = "8421"

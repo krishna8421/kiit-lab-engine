@@ -1,3 +1,5 @@
+.PHONY: generate db-push start clean fmt 
+
 generate:
 	go run github.com/steebchen/prisma-client-go generate
 
@@ -10,4 +12,6 @@ start:
 clean:
 	rm -rf db
 
-.PHONY: generate db-push start clean
+fmt:
+	go fmt ./...
+

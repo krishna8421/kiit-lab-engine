@@ -1,9 +1,10 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
 	"kiit-lab-engine/service"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 type UserController struct {
@@ -14,13 +15,14 @@ func NewUserController(userService service.UserService) *UserController {
 	return &UserController{userService: userService}
 }
 
-func (uc *UserController) GetUser(c *gin.Context) {
-	// Implement the get user logic using the service
+func (u *UserController) GetUser(c *gin.Context) {
 	id := c.Param("id")
-	user, err := uc.userService.GetUser(id)
+
+	user, err := u.userService.GetUserByID(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, user)
 }

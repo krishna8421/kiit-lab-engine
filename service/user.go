@@ -1,29 +1,40 @@
 package service
 
 import (
-	"kiit-lab-engine/core/db"
+	"context"
+	"kiit-lab-engine/db"
+	"kiit-lab-engine/repository"
 )
 
 type UserService interface {
-	GetUser(id string) (interface{}, error)
-	// CreateNewUser() error
+	GetUserByID(ctx context.Context, id string) (*db.UserModel, error)
+	GetUserByEmail(ctx context.Context, email string) (*db.UserModel, error)
+	CreateNewUser(ctx context.Context, user repository.NewUserInput) (*db.UserModel, error)
+	UpdateUser(ctx context.Context, id string, updateUser repository.UpdateUserInput) (*db.UserModel, error)
 }
 
 type userService struct {
-	db *db.DBClient
+	repo repository.UserRepository
 }
 
-func NewUserService(db *db.DBClient) UserService {
+func NewUserService(repo repository.UserRepository) UserService {
 	return &userService{
-		db: db,
+		repo: repo,
 	}
 }
 
-func (u *userService) GetUser(id string) (interface{}, error) {
-	// Use u.db to interact with the database...
-	// This is just an example. Replace with actual user retrieval logic.
-	return map[string]interface{}{
-		"id":   id,
-		"name": "John Doe",
-	}, nil
+func (u *userService) GetUserByID(ctx context.Context, id string) (*db.UserModel, error) {
+	return u.repo.GetUserFromId(ctx, id)
+}
+
+func (u *userService) GetUserByEmail(ctx context.Context, email string) (*db.UserModel, error) {
+	return u.repo.GetUserFromEmail(ctx, email)
+}
+
+func (u *userService) CreateNewUser(ctx context.Context, user repository.NewUserInput) (*db.UserModel, error) {
+	return u.repo.CreateNewUser(ctx, user)
+}
+
+func (u *userService) UpdateUser(ctx context.Context, id string, updateUser repository.UpdateUserInput) (*db.UserModel, error) {
+	return u.repo.UpdateUser(ctx, id, updateUser)
 }

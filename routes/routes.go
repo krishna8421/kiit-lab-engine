@@ -2,15 +2,19 @@ package routes
 
 import (
 	"kiit-lab-engine/controllers"
-	"kiit-lab-engine/core/db"
+	"kiit-lab-engine/db"
+	"kiit-lab-engine/lib/jwt"
+	"kiit-lab-engine/repository"
 	"kiit-lab-engine/service"
 
 	"github.com/gin-gonic/gin"
 )
 
-func InitRoutes(r *gin.Engine, dbClient *db.DBClient) {
-	authService := service.NewAuthService(dbClient)
-	userService := service.NewUserService(dbClient)
+func InitRoutes(r *gin.Engine, dbClient *db.DBClient, jwtManager *jwt.JWTManager) {
+	userRepo := repository.NewUserRepository(dbClient)
+
+	userService := service.NewUserService(userRepo)
+	authService := service.NewAuthService(userRepo, jwtManager)
 
 	authController := controllers.NewAuthController(authService)
 	userController := controllers.NewUserController(userService)

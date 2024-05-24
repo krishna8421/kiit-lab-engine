@@ -3,16 +3,14 @@ package db
 import (
 	"fmt"
 	"log"
-
-	"kiit-lab-engine/db"
 )
 
 type DBClient struct {
-	Prisma *db.PrismaClient
+	Prisma *PrismaClient
 }
 
-func NewClient() *DBClient {
-	prismaClient := db.NewClient()
+func NewPrismaClient() *DBClient {
+	prismaClient := NewClient()
 	return &DBClient{
 		Prisma: prismaClient,
 	}
